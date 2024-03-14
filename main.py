@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 
 pygame.init()
 
@@ -64,6 +65,32 @@ class Planet:
         self.orbit.append((self.x, self.y))
 
 
+class StaticAsteroid:
+    def __init__(self, radius, angle, size, colour):
+        self.radius = radius
+        self.angle = angle
+        self.size = size
+        self.colour = colour
+        self.x = self.radius * math.cos(self.angle)
+        self.y = self.radius * math.sin(self.angle)
+
+    def draw(self, win):
+        x = self.x * Planet.SCALE + width / 2
+        y = self.y * Planet.SCALE + height / 2
+        pygame.draw.circle(win, self.colour, (x, y), self.size)
+
+
+class MovingAsteroid(StaticAsteroid):
+    def __init__(self, radius, angle, size, colour):
+        super().__init__(radius, angle, size, colour)
+        self.x_vel = random.uniform(-0.1, 0.1) * 1000
+        self.y_vel = random.uniform(-0.1, 0.1) * 1000
+
+    def update_position(self):
+        self.x += self.x_vel * Planet.TIMESTEP
+        self.y += self.y_vel * Planet.TIMESTEP
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -88,6 +115,9 @@ def main():
 
     planets = [sun, earth, mars, mercury, venus, jupiter]
 
+    moving_asteroids = [MovingAsteroid(random.uniform(
+        1.5, 2.5) * Planet.AU, random.uniform(0, 2*math.pi), 2, DARK_GREY) for _ in range(200)]
+
     while run:
         clock.tick(60)
         WINDOW.fill((0, 0, 0))
@@ -104,6 +134,9 @@ def main():
         for planet in planets:
             planet.update_position(planets)
             planet.draw(WINDOW)
+        for asteroid in moving_asteroids:
+            asteroid.update_position()
+            asteroid.draw(WINDOW)
         pygame.display.update()
 
 
